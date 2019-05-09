@@ -40,11 +40,11 @@ model.add(Dense(16, activation='relu'))
 model.add(Dense(1, activation='relu'))
 #model.add(Activation("sigmoid"))
 
-opt = tf.keras.optimizers.Adam(lr=.001, decay=1e-5)
+opt = tf.keras.optimizers.Adam(lr=0.001, decay=1e-5)
 #opt = tf.keras.optimizers.RMSprop(0.001)
 
 model = Sequential([
-    CuDNNLSTM(128, return_sequences=True),
+    CuDNNLSTM(128, input_shape=(x_train.shape[1:]), return_sequences=True),
     CuDNNLSTM(128),
     Dense(64, activation=tf.nn.relu),
     Dense(64, activation=tf.nn.relu),
@@ -54,7 +54,8 @@ model = Sequential([
 model.compile(loss='mean_squared_error', optimizer=opt, metrics=['mean_squared_error'])
 
 
-model.fit(x_train, y_train, epochs=10)
+model.fit(x_train, y_train, epochs=15)
 
 #print(scaler_y.inverse_transform([[float(model.predict(np.asarray([[[0.0, 6.840000152587891, 0.0]]]))[0][0][0])]]))
-print(model.predict(np.asarray([[[0.0, 6.840000152587891, 0.0]]])))
+print(model.predict(np.asarray([[[31., 60., 22]]])))
+model.save("/Git/dynamic-follow-tf/dynamic_follow_model")
