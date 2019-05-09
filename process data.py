@@ -2,26 +2,8 @@ import json
 with open("/Git/dynamic-follow-tf/data/driving_data.json", "r") as f:
     d_data = json.loads(f.read())
 
-x_train = [[max(i[0], 0), max(i[1], 0), max(i[2], 0)] for i in d_data]
-y_train = []
-for i in d_data:
-    if i[0] > 0:
-        TR=i[1] / i[0]
-    else:
-        TR=1.4
-    if TR>10:
-        TR=10.
-    y_train.append(TR)
 
-with open("/Git/dynamic-follow-tf/data/x_train", "w") as f:
-    json.dump(x_train, f)
 
-with open("/Git/dynamic-follow-tf/data/y_train", "w") as f:
-    json.dump(y_train, f)
-
-    
-    
-'''
 # split data into different leads
 last_time = d_data[0][3]
 last_distance = d_data[0][1]
@@ -45,9 +27,10 @@ for i in d_data:
 
 print(len(data_lead_split))
 
+
 # remove leads under set amount time, useless
 new_data_lead_split = []
-minimum_lead_time = 10 # seconds
+minimum_lead_time = 5 # seconds
 for i in data_lead_split:
     if i[-1][3] - i[0][3] > minimum_lead_time and len(i) > minimum_lead_time * 10:
         list_builder = []
@@ -55,9 +38,71 @@ for i in data_lead_split:
             list_builder.append({"v_ego": x[0], "dRel": x[1], "vLead": x[2], "time": x[3],"realTR": x[4]})  # convert list to dictionary for ease of reading
         new_data_lead_split.append(list_builder)
 
+#print(len(data_lead_split))
+#print([len(i) for i in data_lead_split])
 
-data_lead_split = new_data_lead_split
+data_lead_split = []
+for i in new_data_lead_split:
+    tmp_split = []
+    for point in i:
+        tmp_split.append(point)
+        if len(tmp_split) == 200 and sum([this_tmp['v_ego'] for this_tmp in tmp_split]) > 0:
+            data_lead_split.append(tmp_split)
+            tmp_split = []
+#print(len(data_lead_split))
+#print([len(i) for i in data_lead_split])
 
+x_train = []
+y_train = []
+
+for idx, i in enumerate(data_lead_split):
+    x_train.append([])
+    for idi, x in enumerate(i):
+        try:
+            future_data = i[idi+50]
+            x_train[idx].append([max(x["v_ego"], 0), max(x["dRel"], 0), max(x["vLead"], 0)])
+        
+        except:
+            pass
+    if i[-1]["v_ego"] > 0:
+        TR=max(i[-1]["dRel"], 0) / max(i[-1]["v_ego"], 0)
+        if i[-1]["v_ego"] < 4.4704 and TR > 1.6:
+            TR = 1.6
+    else:
+        TR=1.6
+    if TR>6.0:
+        TR=6.0
+    y_train.append(TR)
+print(len(y_train))
+print(x_train[4])
+print(y_train[4])
+#print([len(i) for i in x_train])
+
+with open("/Git/dynamic-follow-tf/data/x_train", "w") as f:
+    json.dump(x_train, f)
+
+with open("/Git/dynamic-follow-tf/data/y_train", "w") as f:
+    json.dump(y_train, f)
+
+'''
+x_train = [[max(i[0], 0), max(i[1], 0), max(i[2], 0)] for i in data_lead_split]
+y_train = []
+for i in d_data:
+    if i[0] > 0:
+        TR=i[1] / i[0]
+    else:
+        TR=1.4
+    if TR>10:
+        TR=10.
+    y_train.append(TR)
+
+with open("/Git/dynamic-follow-tf/data/x_train", "w") as f:
+    json.dump(x_train, f)
+
+with open("/Git/dynamic-follow-tf/data/y_train", "w") as f:
+    json.dump(y_train, f)'''
+
+'''
 print(len(data_lead_split))
 
 find_data = [{'vLead': 0.309262752532959, 'dRel': 45.880001068115234, 'realTR': 10.346703303025393, 'v_ego': 4.434262752532959}]

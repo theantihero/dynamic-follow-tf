@@ -11,22 +11,22 @@ import random
 
 with open("/Git/dynamic-follow-tf/data/x_train", "r") as f:
     x_train = json.load(f)
-x_train = np.asarray([[i] for i in x_train])
+x_train = np.asarray([i for i in x_train])
 
 
 with open("/Git/dynamic-follow-tf/data/y_train", "r") as f:
-    y_train = np.asarray([[i] for i in json.load(f)])
-        
+    y_train = np.asarray([i for i in json.load(f)])
 
+print(len(x_train))
+#print(y_train)
 
-#x_train=np.asarray([[[.5, .5, .5, .6]], [[.5, .5, .5, .5]], [[.9, .9, .9, .9]], [[.9, .9, .9, .9]]])
-#y_train=np.asarray([[.1], [.1], [.9], [.9]])
 
 #x_train = tf.keras.utils.normalize(x_train)
 #y_train = tf.keras.utils.normalize(y_train)
 #print(y_train)
 
-
+#x_train = np.asarray([[[5, 5, 5], [5, 5, 5]], [[1.5, 1.5, 1.5], [1.5, 1.5, 1.5]]])
+#y_train = np.asarray([[1.6], [1.5]])
 
 model = Sequential()
 
@@ -54,8 +54,8 @@ model = Sequential([
 model.compile(loss='mean_squared_error', optimizer=opt, metrics=['mean_squared_error'])
 
 
-model.fit(x_train, y_train, epochs=15)
+model.fit(x_train, y_train, epochs=50)
 
 #print(scaler_y.inverse_transform([[float(model.predict(np.asarray([[[0.0, 6.840000152587891, 0.0]]]))[0][0][0])]]))
-print(model.predict(np.asarray([[[31., 60., 22]]])))
+#print(model.predict(np.asarray([[[1.5, 1.5, 1.5], [1.5, 1.5, 1.5]]])))
 model.save("/Git/dynamic-follow-tf/dynamic_follow_model")
