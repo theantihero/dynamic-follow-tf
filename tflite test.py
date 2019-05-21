@@ -1,5 +1,5 @@
 import numpy as np
-import tensorflow_lite as tf
+import tensorflow as tf
 import os
 
 os.chdir("C:/Git/dynamic-follow-tf/models")

@@ -50,11 +50,12 @@ test_data = [[norm(15, v_ego_scale), norm(0, a_ego_scale), norm(15, v_lead_scale
 print(model.predict(np.asarray(test_data)))
 
 save_model = True
+tf_lite = False
 if save_model:
     model_name = "15-min"
     model.save("models/"+model_name+".h5")
-    
-    # convert model to tflite:
-    converter = tf.lite.TFLiteConverter.from_keras_model_file("models/"+model_name+".h5")
-    tflite_model = converter.convert()
-    open("models/"+model_name+".tflite", "wb").write(tflite_model)
+    if tf_lite:
+        # convert model to tflite:
+        converter = tf.lite.TFLiteConverter.from_keras_model_file("models/"+model_name+".h5")
+        tflite_model = converter.convert()
+        open("models/"+model_name+".tflite", "wb").write(tflite_model)
