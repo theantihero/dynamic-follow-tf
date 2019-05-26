@@ -35,10 +35,10 @@ def freeze_session(session, keep_var_names=None, output_names=None, clear_device
         return frozen_graph
 
 
-model_name = "15-min"
-model = load_model(model_name+".h5")
+model_name = "new-model"
+'''model = load_model("h5_models/"+model_name+".h5")
 print([out.op.name for out in model.inputs])
-print([out.op.name for out in model.outputs])
+print([out.op.name for out in model.outputs])'''
 '''frozen_graph = freeze_session(K.get_session(),
                               output_names=[out.op.name for out in model.outputs])
 

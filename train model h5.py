@@ -33,9 +33,11 @@ opt = keras.optimizers.Adam(lr=0.001, decay=1e-5)
 #opt = tf.keras.optimizers.RMSprop(0.001)
 
 model = Sequential([
-    Dense(32, activation=tf.nn.relu, input_shape=(x_train.shape[1:])),
+    Dense(5, activation=tf.nn.relu, input_shape=(x_train.shape[1:])),
     Dense(64, activation=tf.nn.relu),
     Dense(128, activation=tf.nn.relu),
+    Dense(64, activation=tf.nn.relu),
+    Dense(64, activation=tf.nn.relu),
     Dense(64, activation=tf.nn.relu),
     Dense(32, activation=tf.nn.relu),
     Dense(8, activation=tf.nn.relu),
@@ -43,7 +45,7 @@ model = Sequential([
   ])
 
 model.compile(loss='mean_squared_error', optimizer=opt, metrics=['mean_squared_error'])
-model.fit(x_train, y_train, batch_size=1000, epochs=50)
+model.fit(x_train, y_train, batch_size=2000, epochs=100)
 
 test_data = [[norm(15, v_ego_scale), norm(0, a_ego_scale), norm(15, v_lead_scale), norm(18, x_lead_scale), norm(0, a_lead_scale)]]
 
@@ -52,10 +54,10 @@ print(model.predict(np.asarray(test_data)))
 save_model = True
 tf_lite = False
 if save_model:
-    model_name = "15-min"
-    model.save("models/"+model_name+".h5")
+    model_name = "15-min-test"
+    model.save("models/h5_models/"+model_name+".h5")
     if tf_lite:
         # convert model to tflite:
-        converter = tf.lite.TFLiteConverter.from_keras_model_file("models/"+model_name+".h5")
+        converter = tf.lite.TFLiteConverter.from_keras_model_file("models/h5_models/"+model_name+".h5")
         tflite_model = converter.convert()
-        open("models/"+model_name+".tflite", "wb").write(tflite_model)
+        open("models/lite_models/"+model_name+".tflite", "wb").write(tflite_model)
