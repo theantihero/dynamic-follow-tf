@@ -3,19 +3,20 @@ import os
 import tensorflow as tf
 from keras.models import Sequential
 import keras
-from keras.layers import Dense, Dropout, LSTM, CuDNNLSTM, Activation
+from keras.layers import Dense, Dropout, LSTM, CuDNNLSTM, Activation, LeakyReLU
 import numpy as np
 import random
 from normalizer import norm
+from sklearn.preprocessing import normalize
 #np.set_printoptions(threshold=np.inf)
 
 #v_ego, v_lead, d_lead
 os.chdir("C:/Git/dynamic-follow-tf")
 
-with open("data/all/x_train", "r") as f:
+with open("data/all-traffic-highway-combined/x_train", "r") as f:
     x_train = json.load(f)
 
-with open("data/all/y_train", "r") as f:
+with open("data/all-traffic-highway-combined/y_train", "r") as f:
     y_train = json.load(f)
 
 NORM = True
@@ -35,32 +36,48 @@ else:
     x_train = np.asarray(x_train)
     y_train = np.asarray(y_train)
 
-opt = keras.optimizers.Adam(lr=0.001, decay=1e-5)
+'''for idx,i in enumerate(y_train):
+    if i < -.5 and x_train[idx][0] > 8.9:
+        print(i)
+        print(idx)
+        print(x_train[idx])
+        break'''
+
+opt = keras.optimizers.Adam(lr=0.001, decay=1e-6)
+#opt = keras.optimizers.Adadelta()
 #opt = keras.optimizers.RMSprop(0.001)
 
-model = Sequential([
+'''model = Sequential([
     Dense(5, activation="tanh", input_shape=(x_train.shape[1:])),
     Dense(8, activation="tanh"),
     Dense(16, activation="tanh"),
-    Dense(32, activation="tanh"),
-    Dense(64, activation="tanh"),
-    Dense(75, activation="tanh"),
-    Dense(80, activation="tanh"),
-    Dense(90, activation="tanh"),
-    Dense(100, activation="tanh"),
-    Dense(100, activation="relu"),
-    Dense(90, activation="relu"),
-    Dense(80, activation="relu"),
-    Dense(75, activation="relu"),
-    Dense(64, activation="relu"),
-    Dense(32, activation="relu"),
-    Dense(16, activation="relu"),
-    Dense(8, activation="relu"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(300, activation="tanh"),
+    Dense(16, activation="tanh"),
+    Dense(8, activation="tanh"),
     Dense(1),
-  ])
+  ])'''
+
+model = Sequential()
+model.add(Dense(5, activation="tanh", input_shape=(x_train.shape[1:])))
+for i in range(20):
+    model.add(Dense(40, activation="relu"))
+model.add(Dense(1, activation="sigmoid"))
 
 model.compile(loss='mean_squared_error', optimizer=opt, metrics=['mean_squared_error'])
-model.fit(x_train, y_train, shuffle=True, batch_size=16, validation_split=.01, epochs=5)
+model.fit(x_train, y_train, shuffle=True, batch_size=500, validation_split=.05, epochs=50)
+
+data = [norm(23.74811363, v_ego_scale), norm(-0.26912481, a_ego_scale), norm(15.10309029, v_lead_scale), norm(55.72000122, x_lead_scale), norm(-0.31268027, a_lead_scale)] #should be -0.5
+prediction=model.predict(np.asarray([data]))[0][0]
+print((prediction - 0.5)*2.0)
 
 #accur = list([list(i) for i in x_train])
 
@@ -85,10 +102,10 @@ else:
 
 #print(model.predict(np.asarray(test_data)))
 
-save_model = False
+save_model = True
 tf_lite = False
 if save_model:
-    model_name = "all-test"
+    model_name = "combined"
     model.save("models/h5_models/"+model_name+".h5")
     if tf_lite:
         # convert model to tflite:

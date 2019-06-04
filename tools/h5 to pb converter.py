@@ -35,15 +35,17 @@ def freeze_session(session, keep_var_names=None, output_names=None, clear_device
         return frozen_graph
 
 
-model_name = "new-model"
-'''model = load_model("h5_models/"+model_name+".h5")
+model_name = "combined"
+model = load_model("h5_models/"+model_name+".h5")
+convert = True
 print([out.op.name for out in model.inputs])
-print([out.op.name for out in model.outputs])'''
-'''frozen_graph = freeze_session(K.get_session(),
-                              output_names=[out.op.name for out in model.outputs])
+print([out.op.name for out in model.outputs])
+if convert:
+    frozen_graph = freeze_session(K.get_session(),
+                                output_names=[out.op.name for out in model.outputs])
+    
+    tf.train.write_graph(frozen_graph, "pb_models", model_name+".pb", as_text=False)
 
-tf.train.write_graph(frozen_graph, "pb_models", model_name+".pb", as_text=False)'''
-
-gf = tf.GraphDef()
-gf.ParseFromString(open("pb_models/"+model_name+".pb","rb").read())
-print([n.name for n in gf.node])
+    '''gf = tf.GraphDef()
+    gf.ParseFromString(open("pb_models/"+model_name+".pb","rb").read())
+    print([n.name for n in gf.node])'''
