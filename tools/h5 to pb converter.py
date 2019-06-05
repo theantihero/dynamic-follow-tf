@@ -34,8 +34,8 @@ def freeze_session(session, keep_var_names=None, output_names=None, clear_device
                                                       output_names, freeze_var_names)
         return frozen_graph
 
-
-model_name = "combined"
+tf.keras.backend.set_learning_phase(0)
+model_name = "LSTM"
 model = load_model("h5_models/"+model_name+".h5")
 convert = True
 print([out.op.name for out in model.inputs])
@@ -46,6 +46,6 @@ if convert:
     
     tf.train.write_graph(frozen_graph, "pb_models", model_name+".pb", as_text=False)
 
-    '''gf = tf.GraphDef()
+    gf = tf.GraphDef()
     gf.ParseFromString(open("pb_models/"+model_name+".pb","rb").read())
-    print([n.name for n in gf.node])'''
+    print([n.name for n in gf.node])
