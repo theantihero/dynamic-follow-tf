@@ -59,7 +59,7 @@ else:
         print(x_train[idx])
         break'''
 
-opt = keras.optimizers.Adam(lr=0.01, decay=1e-6)
+opt = keras.optimizers.Adam(lr=0.001, decay=1e-6)
 #opt = keras.optimizers.Adadelta()
 #opt = keras.optimizers.RMSprop(0.001)
 
@@ -83,18 +83,18 @@ opt = keras.optimizers.Adam(lr=0.01, decay=1e-6)
   ])'''
 
 model = Sequential()
-model.add(CuDNNLSTM(40, input_shape=(x_train.shape[1:]), return_sequences=True))
+model.add(LSTM(40, input_shape=(x_train.shape[1:]), activation="tanh", return_sequences=True))
 #model.add(Dropout(0.2))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 
 for i in range(10):
-    model.add(CuDNNLSTM(64, input_shape=(x_train.shape[1:]), return_sequences=True))
+    model.add(LSTM(64, activation="tanh", return_sequences=True))
     #model.add(Dropout(0.2))
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
 
-model.add(CuDNNLSTM(40, input_shape=(x_train.shape[1:])))
+model.add(LSTM(40, activation="tanh",))
 #model.add(Dropout(0.2))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 
 model.add(Dense(32, activation="relu"))
 #model.add(Dropout(0.2))
@@ -171,10 +171,10 @@ except:
 
 #print(model.predict(np.asarray(test_data)))
 
-save_model = False
+save_model = True
 tf_lite = False
 if save_model:
-    model_name = "LSTM"
+    model_name = "LSTM-gbergman"
     model.save("models/h5_models/"+model_name+".h5")
     if tf_lite:
         # convert model to tflite:
