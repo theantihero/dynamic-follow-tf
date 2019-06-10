@@ -8,35 +8,24 @@ os.chdir("C:/Git/dynamic-follow-tf/data")
 with open("traffic-highway/df-data", "r") as f:
     d_data = f.read().split("\n")
 
-data_dir = "D:\Resilio Sync\df"
-d_data = []
-for folder in os.listdir(data_dir):
-    if "CHEVROLET VOLT" in folder or folder == "gbergman":
-        #print(os.path.join(data_dir, folders))
-        folders = os.path.join(data_dir, folder)
-        for filename in os.listdir(os.path.join(data_dir, folder)):
-            if os.path.getsize(os.path.join(os.path.join(data_dir, folder), filename)) > 30000: #if bigger than 30kb
-                #print(os.path.join(os.path.join(data_dir, folder), filename))
-                with open(os.path.join(os.path.join(data_dir, folder), filename), "r") as f:
-                    df = f.read().split("\n")
-                for line in df:
-                    if line != "" and "[" in line and "]" in line and len(line) >= 40:
-                        d_data.append(ast.literal_eval(line))
-                    
-
 split_leads=False
 
 driving_data = []
-for line in d_data:
-    if line[0] < -0.22352 or sum(line) == 0: #or (sum(line[:3]) == 0):
-        continue
-    if line[4] > 5 or line[4] < -5: # filter out crazy acceleration
-        continue
-    '''line[0] = max(line[0], 0)
-    line[2] = max(line[2], 0)
-    line[3] = max(line[3], 0)'''
-    #line[-1] = line[-1] / 4047.0  # only for corolla
-    driving_data.append(line)
+for i in d_data:
+    if i != "":
+        line = ast.literal_eval(i) #remove time for now
+        if line[0] < -0.22352 or sum(line) == 0: #or (sum(line[:3]) == 0):
+            continue
+        if line[4] > 5 or line[4] < -5: # filter out crazy acceleration
+            continue
+        '''if line[6] > 0: # gas only
+            continue'''
+        line[0] = max(line[0], 0)
+        line[2] = max(line[2], 0)
+        line[3] = max(line[3], 0)
+        line[6] = 0.0 # remove all brake data
+        #line[-1] = line[-1] / 4047.0  # only for corolla
+        driving_data.append(line)
 
 if split_leads:
     split_data = [[]]
@@ -111,9 +100,11 @@ print(len([i for i in y_train if i > 0]))
 print(len([i for i in y_train if i < 0]))
 print(len([i for i in y_train if i == 0]))
 
-save_data = True
+
+save_data=True
+
 if save_data:
-    save_dir="all-chevy"
+    save_dir="brake_to_none"
     x_train = [i[:5] for i in driving_data]
     with open(save_dir+"/x_train", "w") as f:
         json.dump(x_train, f)
@@ -121,8 +112,7 @@ if save_data:
     with open(save_dir+"/y_train", "w") as f:
         json.dump(y_train, f)
 
-'''driving_data = [i for idx, i in enumerate(driving_data) if 20000 < idx < 29000]
-x = [i for i in range(len(driving_data))]
+'''x = [i for i in range(len(driving_data))]
 y = [i[0] for i in driving_data]
 plt.plot(x, y)
 plt.show()'''

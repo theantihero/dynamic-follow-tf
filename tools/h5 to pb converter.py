@@ -35,7 +35,7 @@ def freeze_session(session, keep_var_names=None, output_names=None, clear_device
         return frozen_graph
 
 tf.keras.backend.set_learning_phase(0)
-model_name = "gas-only"
+model_name = "all-chevy"
 model = load_model("h5_models/"+model_name+".h5")
 convert = True
 print([out.op.name for out in model.inputs])

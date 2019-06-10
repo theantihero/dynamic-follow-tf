@@ -13,10 +13,10 @@ from sklearn.preprocessing import normalize
 #v_ego, v_lead, d_lead
 os.chdir("C:/Git/dynamic-follow-tf")
 
-with open("data/brake_to_none/x_train", "r") as f:
+with open("data/all-chevy/x_train", "r") as f:
     x_train = json.load(f)
 
-with open("data/brake_to_none/y_train", "r") as f:
+with open("data/all-chevy/y_train", "r") as f:
     y_train = json.load(f)
 
 NORM = True
@@ -63,14 +63,14 @@ opt = keras.optimizers.Adadelta()
   ])'''
 
 model = Sequential()
-model.add(Dense(5, activation="tanh", input_shape=(x_train.shape[1:])))
-for i in range(20):
-    model.add(Dense(45, activation="relu"))
+model.add(Dense(32, activation="relu", input_shape=(x_train.shape[1:])))
+for i in range(5):
+    model.add(Dense(64, activation="relu"))
     #model.add(Dropout(0.08))
 model.add(Dense(1))
 
 model.compile(loss='mean_absolute_error', optimizer=opt, metrics=['mean_squared_error'])
-model.fit(x_train, y_train, shuffle=True, batch_size=42, epochs=5)
+model.fit(x_train, y_train, shuffle=True, batch_size=38, epochs=4)
 
 #data = [norm(23.74811363, v_ego_scale), norm(-0.26912481, a_ego_scale), norm(15.10309029, v_lead_scale), norm(55.72000122, x_lead_scale), norm(-0.31268027, a_lead_scale)] #should be -0.5
 #prediction=model.predict(np.asarray([data]))[0][0]
@@ -95,7 +95,7 @@ if NORM:
 else:
     print("Accuracy: "+ str(np.interp(avg, [0, 1], [1, 0])))
 print()
-print("Gas/brake spread: {}".format(sum([model.predict([[[random.uniform(0,1) for i in range(5)]]])[0][0] for i in range(10000)])/10000)) # should be as close as possible to 0.5
+print("Gas/brake spread: {}".format(sum([model.predict([[[random.uniform(0,1) for i in range(5)]]])[0][0] for i in range(1000)])/1000)) # should be as close as possible to 0.5
 
 #test_data = [[norm(15, v_ego_scale), norm(0, a_ego_scale), norm(15, v_lead_scale), norm(18, x_lead_scale), norm(0, a_lead_scale)]]
 
@@ -104,7 +104,7 @@ print("Gas/brake spread: {}".format(sum([model.predict([[[random.uniform(0,1) fo
 save_model = True
 tf_lite = False
 if save_model:
-    model_name = "gas-only"
+    model_name = "all-chevy"
     model.save("models/h5_models/"+model_name+".h5")
     print("Saved model!")
     if tf_lite:
