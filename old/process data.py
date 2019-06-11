@@ -3,19 +3,19 @@ import ast
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 os.chdir("C:/Git/dynamic-follow-tf/data")
-with open("traffic-highway/df-data", "r") as f:
-    d_data = f.read().split("\n")
+'''with open("traffic-highway/df-data", "r") as f:
+    d_data = f.read().split("\n")'''
 
 data_dir = "D:\Resilio Sync\df"
 d_data = []
 for folder in os.listdir(data_dir):
-    if "CHEVROLET VOLT" in folder or folder == "gbergman":
-        #print(os.path.join(data_dir, folders))
+    if "CHEVROLET VOLT" in folder or "HOLDEN ASTRA" in folder or folder == "gbergman":
         folders = os.path.join(data_dir, folder)
         for filename in os.listdir(os.path.join(data_dir, folder)):
-            if os.path.getsize(os.path.join(os.path.join(data_dir, folder), filename)) > 30000: #if bigger than 30kb
+            if os.path.getsize(os.path.join(os.path.join(data_dir, folder), filename)) > 40000: #if bigger than 30kb
                 #print(os.path.join(os.path.join(data_dir, folder), filename))
                 with open(os.path.join(os.path.join(data_dir, folder), filename), "r") as f:
                     df = f.read().split("\n")
@@ -36,7 +36,8 @@ for line in d_data:
     line[2] = max(line[2], 0)
     line[3] = max(line[3], 0)'''
     #line[-1] = line[-1] / 4047.0  # only for corolla
-    driving_data.append(line)
+    line_new = [line[0], line[1], (line[2]-line[0]), line[3], line[4], line[5], line[6], line[7]] # this makes v_lead, v_rel instead
+    driving_data.append(line_new)
 
 if split_leads:
     split_data = [[]]
@@ -90,36 +91,41 @@ if split_leads:
             json.dump(y_train, f)
     
 even_out=False
-if even_out:
-    driving_data_equalized=[]
-    counter=0
-    for i in driving_data: # even out gas and brake sample numbers
-        if i[5] > 0:
-            if counter == 2:
-                driving_data_equalized.append(i)
-                counter=0
-            counter+=1
-            continue
-        else:
-            driving_data_equalized.append(i)
-    driving_data=driving_data_equalized
+if even_out:  # makes number of gas/brake/nothing samples equal to min num of samples
+    gas = [i for i in driving_data if i[5] - i[6] > 0]
+    nothing = [i for i in driving_data if i[5] - i[6] == 0]
+    brake = [i for i in driving_data if i[5] - i[6] < 0]
+    to_remove_gas = len(gas) - min(len(gas), len(nothing), len(brake)) if len(gas) != min(len(gas), len(nothing), len(brake)) else 0
+    to_remove_nothing = len(nothing) - min(len(gas), len(nothing), len(brake)) if len(nothing) != min(len(gas), len(nothing), len(brake)) else 0
+    to_remove_brake = len(brake) - min(len(gas), len(nothing), len(brake)) if len(brake) != min(len(gas), len(nothing), len(brake)) else 0
+    for i in range(to_remove_gas):
+        gas.pop(random.randrange(len(gas)))
+    for i in range(to_remove_nothing):
+        nothing.pop(random.randrange(len(nothing)))
+    for i in range(to_remove_brake):
+        brake.pop(random.randrange(len(brake)))
+    driving_data = gas + nothing + brake
+    random.shuffle(driving_data)
+    
+    
 
 print(len(driving_data))
 print()
 y_train = [i[5] - i[6] for i in driving_data]
 print(len([i for i in y_train if i > 0]))
-print(len([i for i in y_train if i < 0]))
 print(len([i for i in y_train if i == 0]))
+print(len([i for i in y_train if i < 0]))
 
 save_data = True
 if save_data:
-    save_dir="all-chevy"
+    save_dir="gm-only"
     x_train = [i[:5] for i in driving_data]
     with open(save_dir+"/x_train", "w") as f:
         json.dump(x_train, f)
     
     with open(save_dir+"/y_train", "w") as f:
         json.dump(y_train, f)
+    print("Saved data!")
 
 '''driving_data = [i for idx, i in enumerate(driving_data) if 20000 < idx < 29000]
 x = [i for i in range(len(driving_data))]
