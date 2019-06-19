@@ -83,28 +83,15 @@ opt = keras.optimizers.Adam(lr=0.001, decay=1e-6)
   ])'''
 
 model = Sequential()
-model.add(LSTM(40, input_shape=(x_train.shape[1:]), activation="tanh", return_sequences=True))
+model.add(CuDNNLSTM(40, input_shape=(x_train.shape[1:]), return_sequences=True))
 #model.add(Dropout(0.2))
 #model.add(BatchNormalization())
 
-for i in range(10):
-    model.add(LSTM(64, activation="tanh", return_sequences=True))
+for i in range(4):
+    model.add(CuDNNLSTM(40, return_sequences=True))
     #model.add(Dropout(0.2))
     #model.add(BatchNormalization())
-
-model.add(LSTM(40, activation="tanh",))
-#model.add(Dropout(0.2))
-#model.add(BatchNormalization())
-
-model.add(Dense(32, activation="relu"))
-#model.add(Dropout(0.2))
-
-model.add(Dense(20, activation="relu"))
-#model.add(Dropout(0.2))
-
-model.add(Dense(10, activation="relu"))
-#model.add(Dropout(0.2))
-
+model.add(CuDNNLSTM(40))
 model.add(Dense(1))
 
 
@@ -116,7 +103,7 @@ model.add(Dense(1, activation="linear"))'''
 
 model.compile(loss='mean_absolute_error', optimizer=opt, metrics=['mean_squared_error'])
 #tensorboard = TensorBoard(log_dir="logs/test-{}".format("30epoch"))
-model.fit(x_train, y_train, shuffle=True, batch_size=32, validation_split=.1, epochs=20) # callbacks=[tensorboard]
+model.fit(x_train, y_train, shuffle=True, batch_size=32, validation_split=.02, epochs=5) # callbacks=[tensorboard]
 
 data = [[0.04548478, 0.04523729, 0.04512114, 0.04488637, 0.04469746,
         0.04454154, 0.0443153 , 0.04414989, 0.04390321, 0.04371238,
@@ -171,7 +158,7 @@ except:
 
 #print(model.predict(np.asarray(test_data)))
 
-save_model = True
+save_model = False
 tf_lite = False
 if save_model:
     model_name = "LSTM-gbergman"

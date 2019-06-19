@@ -1,11 +1,17 @@
 import numpy as np
+scale = [0, 1] # wider scale might improve accuracy
 def norm(data, min_max=[]):
     if min_max==[]:
         d_min = min(data)
         d_max = max(data)
-        return [(i - d_min) / (d_max - d_min) for i in data], [d_min, d_max]
+        
+        x = [d_min, d_max]
+        return [np.interp(i, x, scale) for i in data], [d_min, d_max]
+        #return [(i - d_min) / (d_max - d_min) for i in data], [d_min, d_max]
     else:
-        return (data - min_max[0]) / (min_max[1] - min_max[0])
+        y = [min_max[0], min_max[1]]
+        return np.interp(data, scale, y)
+        #return (data - min_max[0]) / (min_max[1] - min_max[0])
 
 def get_3d_min_max(data, idx):
     #all_vals = [j for i in [[h[idx] for h in p] for p in data] for j in i]

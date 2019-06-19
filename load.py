@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from normalizer import norm
 os.chdir("C:/Git/dynamic-follow-tf/models/h5_models")
-model = tf.keras.models.load_model("combined.h5")
+model = tf.keras.models.load_model("gm-only.h5")
 v_ego_scale = [0.0, 36.1995735168457]
 a_ego_scale = [-3.0412862300872803, 2.78971791267395]
 v_lead_scale = [0.0, 91.02222442626953]
