@@ -24,6 +24,23 @@ for folder in os.listdir(data_dir):
                     if line != "" and "[" in line and "]" in line and len(line) >= 40:
                         gm_counter+=1
                         d_data.append(ast.literal_eval(line))
+    
+    elif any([sup_car in folder for sup_car in ["HONDA CIVIC 2016 TOURING"]]):
+        for filename in os.listdir(os.path.join(data_dir, folder)):
+            if os.path.getsize(os.path.join(os.path.join(data_dir, folder), filename)) > 40000: #if bigger than 40kb
+                with open(os.path.join(os.path.join(data_dir, folder), filename), "r") as f:
+                    df = f.read().split("\n")
+                for line in df:
+                    if line != "" and "[" in line and "]" in line and len(line) >= 40:
+                        line = ast.literal_eval(line)
+                        if line[6] > 1.0 and line[0] < .01: # user brake skyrockets when car is stopped for some reason, though since we have data from gm, we can exclude this data from honda
+                            pass
+                        else:
+                            line[6] = np.clip(line[6], 0.0, 1.0) # sometimes goes neg when really no brake
+                            d_data.append(line)
+                            other_counter+=1
+                        
+    
     # the following should improve performance for deciding when and how much to apply gas (but might reduce braking performance)
     '''elif any([sup_car in folder for sup_car in ["TOYOTA COROLLA 2017", "TOYOTA PRIUS 2017", "TOYOTA RAV4 HYBRID 2017", "TOYOTA RAV4 2017"]]):
         for filename in os.listdir(os.path.join(data_dir, folder)):
@@ -45,7 +62,7 @@ driving_data = []
 for line in d_data:  # do filtering
     if line[0] < -0.22352 or sum(line) == 0: #or (sum(line[:3]) == 0):
         continue
-    if line[4] > 5 or line[4] < -5: # filter out crazy acceleration
+    if line[4] > 10 or line[4] < -10: # filter out crazy acceleration
         continue
     #line[0] = max(line[0], 0)
     #line[2] = max(line[2], 0)
@@ -108,7 +125,7 @@ if split_leads:
         with open("LSTM/y_train-gbergman", "w") as f:
             json.dump(y_train, f)
 
-even_out=True
+even_out=False
 if even_out:  # makes number of gas/brake/nothing samples equal to min num of samples
     gas = [i for i in driving_data if i[5] - i[6] > 0]
     nothing = [i for i in driving_data if i[5] - i[6] == 0]
@@ -119,7 +136,23 @@ if even_out:  # makes number of gas/brake/nothing samples equal to min num of sa
     del gas[:to_remove_gas]
     del nothing[:to_remove_nothing]
     del brake[:to_remove_brake]
+    
+    do_mods=False
+    if do_mods:
+        x=[0.44704, 1.78816, 3.57632]
+        y=[.05, .1, .3]
+        new_nothing = []
+        for i in nothing:
+            i[6]=.2
+            new_nothing.append(i)
+            '''if i[0] > i[2] and i[4] < 0.134112 and abs(i[0] - i[2]) > 0.89408: # if self car is faster than lead and we're not breaking and lead is not accelerating
+                i[6] = np.interp(i[0]-i[2], x, y)
+                new_nothing.append(i)
+            else:
+                new_nothing.append(i)'''
+        nothing = list(new_nothing)
     driving_data = gas + nothing + brake
+        
     
     
 
