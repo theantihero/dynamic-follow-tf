@@ -26,6 +26,9 @@ with open("data/gm-only/y_train", "r") as f:
     y_train = json.load(f)
 #y_train = [i if i > 0.0 else i -0.125 for i in y_train]  # since I'm training with Volt, users usually have regen braking. when 'coasting' users are actually braking
 #y_train = [(i - 0.125) for i in y_train]
+'''x = [-.25, -.15, 0, .15, .25]
+y = [0, .05, .15, .05, 0]
+y_train = [i - np.interp(i, x, y) for i in y_train]'''
 
 NORM = True
 if NORM:
@@ -72,8 +75,8 @@ opt = keras.optimizers.Adadelta()
     Dense(1),
   ])'''
 
-layer_num=14
-nodes=184
+layer_num=18
+nodes=186
 a_function="relu"
 
 model = Sequential()
@@ -102,7 +105,7 @@ model.add(Dense(1))'''
 
 model.compile(loss='mean_absolute_error', optimizer=opt, metrics=['mean_squared_error'])
 #tensorboard = TensorBoard(log_dir="logs/{}-layers-{}-nodes-{}".format(layer_num, nodes, a_function))
-model.fit(x_train, y_train, shuffle=True, batch_size=64, validation_split=0.0001, epochs=3) #callbacks=[tensorboard])
+model.fit(x_train, y_train, shuffle=True, batch_size=2024, validation_split=0.001, epochs=1) #callbacks=[tensorboard])
 
 #data = [norm(23.74811363, v_ego_scale), norm(-0.26912481, a_ego_scale), norm(15.10309029, v_lead_scale), norm(55.72000122, x_lead_scale), norm(-0.31268027, a_lead_scale)] #should be -0.5
 #prediction=model.predict(np.asarray([[norm(23.74811363, v_ego_scale), norm(15.10309029, v_lead_scale), norm(30.72000122, x_lead_scale)]]))[0][0]
@@ -145,7 +148,7 @@ print("Gas/brake spread: {}".format(sum([model.predict([[[random.uniform(0,1) fo
 
 #print(model.predict(np.asarray(test_data)))
 
-save_model = False
+save_model = True
 tf_lite = False
 if save_model:
     model_name = "gm-only"
